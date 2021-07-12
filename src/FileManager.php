@@ -36,7 +36,7 @@ class FileManager
         $rule = '/http[s]?\:\/\/([\w|\.|\d]+)/i';
         if (preg_match_all($rule, $path, $file_c_matches)){
             $latest_domain = end($file_c_matches[1]);
-            return $latest_domain === ConfigHelper::getFileDomain();
+            return in_array($latest_domain, ConfigHelper::getFileDomain());
         }else{
             return true;
         }

@@ -29,21 +29,21 @@ php artisan vendor:publish --provider="Provider: ClearAbandon\ClearAbandonServic
 #### 使用命令
 + 软删除
 ```bash
-qscmf:clear-abandon --soft
+qscmf:clear-abandon
 ```
 或者
 ```bash
-qscmf:clear-abandon --soft --type=soft
+qscmf:clear-abandon --type=soft
 ```
 
 + 恢复删除
 ```bash
-qscmf:clear-abandon --soft --type=recover
+qscmf:clear-abandon --type=recover
 ```
 
 + 删除
 ```bash
-qscmf:clear-abandon --soft --type=delete
+qscmf:clear-abandon --type=delete
 ```
 
 ##### 参数介绍
@@ -57,7 +57,7 @@ delete: 将临时目录以及备份数据删除
 
 ```bash
 # 选项可使用简写，如需要恢复删除操作
-qscmf:clear-abandon -S -Trecover
+qscmf:clear-abandon -Trecover
 ```
 
 ### 直接删除
@@ -67,5 +67,9 @@ qscmf:clear-abandon -S -Trecover
 
 #### 使用命令
 ```bash
-qscmf:clear-abandon
+qscmf:clear-abandon -D
+```
+或者
+```bash
+qscmf:clear-abandon --delete
 ```

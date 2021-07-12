@@ -13,8 +13,14 @@ class ConfigHelper{
     }
 
     static public function getStorageFileDir(){
-        $dir = self::getConfigWithKey('storage_file_dir') ?: '/Uploads/';
-        return rtrim($dir, '/').'/';
+        $dir_name = self::getConfigWithKey('storage_file_dir');
+        if ($dir_name){
+            $dir_name_arr = explode('/',trim($dir_name, '/'));
+            $dir = '/'.end($dir_name_arr).'/';
+        }else{
+            $dir = '/Uploads/';
+        }
+        return $dir;
     }
 
     static public function getConfigWithKey($key, $prefix = null){
@@ -22,21 +28,16 @@ class ConfigHelper{
     }
 
     static public function getStorageFileDirName(){
-        return LARA_DIR.'/../www'.self::getStorageFileDir();
+        return self::getConfigWithKey('storage_file_dir') ?: LARA_DIR.'/../www'.'/Uploads/';
     }
 
     static public function getFileDomain(){
-        return self::getConfigWithKey('file_domain');
-    }
-
-    static public function getStorageTmpDir(){
-        $dir = self::getConfigWithKey('storage_unused_file_tmp_dir');
-        return rtrim($dir, '/').'/';
+        return (array)self::getConfigWithKey('file_domain');
     }
 
     static public function getStorageTmpDirName(){
-//        return LARA_DIR.'/../www'.self::getStorageTmpDir();
-        return self::getStorageTmpDir();
+        $dir = self::getConfigWithKey('storage_unused_file_tmp_dir');
+        return rtrim($dir, '/').'/';
     }
 
     static public function getStorageFileBakTable(){

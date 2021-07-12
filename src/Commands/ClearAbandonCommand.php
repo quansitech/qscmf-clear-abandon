@@ -18,7 +18,7 @@ class ClearAbandonCommand extends Command
      * @var string
      */
     protected $signature = 'qscmf:clear-abandon
-                            {--S|soft : yes will move and backup abandon;no will clear abandon}
+                            {--D|delete : yes will clear abandon;no will move and backup abandon}
                             {--T|type=soft :  soft(default):remove file to other directory and backup db data to other table;delete:delete tmp dir and drop tmp table;recover:recover file and db data like before soft delete}
                             ';
 
@@ -46,8 +46,8 @@ class ClearAbandonCommand extends Command
      */
     public function handle()
     {
-        $is_soft = $this->option('soft');
-        if (!$is_soft){
+        $is_delete = $this->option('delete');
+        if ($is_delete){
             if ($this->confirm("确定要直接删除吗？")){
                 $this->directDel();
             }
