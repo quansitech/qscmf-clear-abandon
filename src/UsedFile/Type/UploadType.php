@@ -64,7 +64,6 @@ class UploadType extends AType
     public function extractUsedFile()
     {
         $ids = $this->fetchWithTableColumn();
-        $files = [];
         $table = $this->storage_file_table['table_name'];
         $field = $this->storage_file_table['column_name'];
         $uq_key = $this->getUqKey($this->storage_file_table);
@@ -72,19 +71,13 @@ class UploadType extends AType
         DB::table($table)
             ->whereIn($uq_key,$ids)
             ->select([$uq_key,$field])
-            ->chunkById($this->per_page, function ($list) use(&$files, $uq_key, $field){
-                $row_files = [];
+            ->chunkById($this->per_page, function ($list) use($uq_key, $field){
                 foreach ($list as $one_data) {
-                    $id = $one_data->$uq_key;
                     $value = $one_data->$field;
 
                     FileManager::isUsed($value, $value);
-
-//                    $value && $row_files[$value] = ['file' => $value, 'id' => $id, 'used' => [$value => $value]];
                 }
-//                $files = array_merge($files, $row_files);
             }, $uq_key);
 
-//        return $files;
     }
 }

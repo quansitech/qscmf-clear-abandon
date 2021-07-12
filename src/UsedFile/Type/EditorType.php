@@ -9,13 +9,6 @@ use function foo\func;
 
 class EditorType extends AType
 {
-// 使用正则匹配字段是否使用了图片
-// 可能有的情况：
-// 相对路径 /Uploads/editor/20210706/1625562452316680.jpg
-// 有子目录的相对路径 /reading/Uploads/editor/20200313/1584066556133155.png
-// 没有使用代理且全域名 http://tslj1.t4tstudio.com/Uploads/editor/20180323/1521794771620269.jpg
-// 使用代理且全域名 https://tslj.t4tstudio.com/booksharing/ip/q90/https://tslj.t4tstudio.com/booksharing/Uploads/editor/20210518/1621322855614850.png
-
     protected $table_with_column_mapping_key = 'table_editor_field_mapping';
     protected $storage_file_dir;
    // protected $editor_data_type = "'varchar','text','longtext'";
@@ -34,9 +27,8 @@ class EditorType extends AType
 
     public function extractUsedFile()
     {
-        $files = [];
         $editor_info = $this->table_with_column_mapping;
-        collect($editor_info)->each(function ($ent) use(&$files){
+        collect($editor_info)->each(function ($ent){
             $table_name = $ent['table_name'];
             $uq_key = $this->getUqKey($ent);
             $column_name = $ent['column_name'];
@@ -45,17 +37,12 @@ class EditorType extends AType
                 ->where($where_arr, null, null, 'or')
                 ->select($column_name)
                 ->orderBy($uq_key)
-                ->chunk($this->per_page, function ($list) use($column_name, &$files){
-                    $row_files = [];
+                ->chunk($this->per_page, function ($list) use($column_name){
                     foreach ($list as $row_data){
-//                        $row_files = $this->parseEditorRow($column_name, $row_data);
                         $this->parseEditorRow($column_name, $row_data);
                     }
-//                    $files = array_merge($files, $row_files);
                 });
         });
-
-//        return $files;
     }
 
     protected function combineColumnLikeQuery($column){
@@ -65,16 +52,10 @@ class EditorType extends AType
     }
 
     protected function parseEditorRow($fields, $db_data){
-        $files = [];
-        collect($fields)->each(function ($field) use($db_data, &$files){
+        collect($fields)->each(function ($field) use($db_data){
             $value = $db_data->$field;
-//            list($r, $matches) = $this->extractFileFromEditorStr($value);
             $this->extractFileFromEditorStr($value);
-//            if ($r > 0){
-//                $files = array_merge($files, $matches);
-//            }
         });
-//        return $files;
     }
 
     protected function extractFileFromEditorStr($string){
@@ -82,20 +63,11 @@ class EditorType extends AType
         $path = trim($this->storage_file_dir, '/');
         $file_rule = '/<(?:img|a).*?(?:src|href)=[\"|\']((?:[\w|\:|\/|\d|\.]+)?\/'.$path.'\/(.*?))[\"|\']/i';
         $r = preg_match_all($file_rule, $decode_string, $matches);
-        $file_matches = [];
         if ($r > 0){
             array_map(function ($used, $key) use(&$file_matches){
                 FileManager::isUsed($key, $used);
-
-//                if (isset($file_matches[$key])){
-//                    $file_matches[$key]['used'][$used] = $used;
-//                }else{
-//                    $file_matches[$key] = ['file' => $key, 'used' => [$used => $used]];
-//                }
             }, $matches[1], $matches[2]);
-            $r = count($file_matches);
         }
-//        return [$r, $file_matches];
     }
 
     protected function defaultEditorField(){

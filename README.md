@@ -21,7 +21,7 @@ php artisan vendor:publish
 ```
 + 选择发布  Provider: ClearAbandon\ClearAbandonServiceProvider
   
-+ 根据项目修改配置值，具体配置项查看文件注释
++ 根据项目修改配置值，具体配置项查看配置文件 clearAbandon.php 注释
 
 ### 软删除
 ```text
@@ -32,6 +32,7 @@ php artisan vendor:publish
 ```bash
 qscmf:clear-abandon --soft
 ```
+或者
 ```bash
 qscmf:clear-abandon --soft --type=soft
 ```
@@ -46,16 +47,17 @@ qscmf:clear-abandon --soft --type=recover
 qscmf:clear-abandon --soft --type=delete
 ```
 
+##### 参数介绍
 ```text
 type 可选值，默认为soft
 soft: 将未使用的文件备份到临时目录，将对应数据表的数据存放到临时数据表
 recover: 恢复至使用soft前的状态
 delete: 将临时目录以及备份数据删除
 
-选项可使用简写，如需要恢复删除操作
 ```
 
 ```bash
+# 选项可使用简写，如需要恢复删除操作
 qscmf:clear-abandon -S -Trecover
 ```
 
