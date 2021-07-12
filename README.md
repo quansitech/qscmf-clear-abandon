@@ -17,9 +17,8 @@ composer require quansitech/qscmf-clear-abandon
 ### 修改配置
 + 执行命令
 ```bash
-php artisan vendor:publish
+php artisan vendor:publish --provider="Provider: ClearAbandon\ClearAbandonServiceProvider"
 ```
-+ 选择发布  Provider: ClearAbandon\ClearAbandonServiceProvider
   
 + 根据项目修改配置值，具体配置项查看配置文件 clearAbandon.php 注释
 
