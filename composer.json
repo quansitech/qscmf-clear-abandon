@@ -7,7 +7,7 @@
   "authors": [
     {
       "name": "xhiny",
-      "email": "xhiny@163.com"
+      "email": "axhiny@163.com"
     }
   ],
   "require": {
@@ -25,6 +25,12 @@
       "providers": [
         "ClearAbandon\\ClearAbandonServiceProvider"
       ]
+    }
+  },
+  "repositories": {
+    "packagist": {
+      "type": "composer",
+      "url": "https://mirrors.aliyun.com/composer/"
     }
   }
 }
