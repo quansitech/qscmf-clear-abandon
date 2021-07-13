@@ -48,6 +48,10 @@ class ConfigHelper{
         return self::getStorageFileTableWithColumn()['table_name'];
     }
 
+    static public function getStorageFileUqKey(){
+        return DBHelper::getUqKey(self::getStorageFileTableWithColumn());
+    }
+
     static public function getDatabase(){
         return config('database.connections.mysql.database');
     }

@@ -15,10 +15,13 @@ class DBHelper
         $uq_key = $table_with_column['uq_key'];
         $file = array_values($file);
 
-        DB::table($table)
+        $db = DB::table($table)
             ->select($uq_key)
-            ->whereIn($field_name, $file)
-            ->chunkById(1000, function ($list) use(&$ids, $uq_key){
+            ->whereIn($field_name, $file);
+            if (ConfigHelper::existsSecurity()){
+                $db->where(ConfigHelper::getSecurityColumnName(), '=', 0);
+            }
+            $db->chunkById(1000, function ($list) use(&$ids, $uq_key){
                 foreach ($list as $one_data){
                     $ids[] = $one_data->$uq_key;
                 }
@@ -30,6 +33,7 @@ class DBHelper
     static public function backFileIds($ids){
         $from_table = ConfigHelper::getStorageFileTable();
         $target_table = ConfigHelper::getStorageFileBakTable();
+        $uq_key = ConfigHelper::getStorageFileUqKey();
 
         DB::beginTransaction();
         try {
@@ -41,7 +45,7 @@ class DBHelper
             if ($bak_r === false){
                 E('备份数据表失败');
             }
-            $del_data_r = self::deleteSourceFileData($ids, $from_table);
+            $del_data_r = self::deleteSourceFileData($ids, $from_table, $uq_key);
             if ($del_data_r === false){
                 E('删除源数据表失败');
             }
@@ -74,9 +78,8 @@ sql;
         return DB::unprepared($sql);
     }
 
-    static protected function deleteSourceFileData($ids, $table){
-        return DB::table($table)->delete($ids);
-//        return 1;
+    static protected function deleteSourceFileData($ids, $table, $column_name){
+        return DB::table($table)->whereIn($column_name, $ids)->delete();
     }
 
     static public function dropBakTable(){
@@ -119,10 +122,11 @@ sql;
 
     static public function deleteFileIds($ids){
         $from_table = ConfigHelper::getStorageFileTable();
+        $uq_key = ConfigHelper::getStorageFileUqKey();
 
         DB::beginTransaction();
         try {
-            $del_data_r = self::deleteSourceFileData($ids, $from_table);
+            $del_data_r = self::deleteSourceFileData($ids, $from_table, $uq_key);
             if ($del_data_r === false){
                 E('删除数据表失败');
             }
