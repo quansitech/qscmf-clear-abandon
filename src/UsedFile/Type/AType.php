@@ -5,6 +5,7 @@ namespace ClearAbandon\UsedFile\Type;
 
 
 use ClearAbandon\ConfigHelper;
+use ClearAbandon\DBHelper;
 
 abstract class AType implements IType
 {
@@ -22,7 +23,7 @@ abstract class AType implements IType
     }
 
     protected function getUqKey($config, $key = 'uq_key'){
-        return isset($config[$key]) && $config[$key] ? $config[$key] : 'id';
+        return DBHelper::getUqKey($config, $key);
     }
 
     abstract public function extractUsedFile();

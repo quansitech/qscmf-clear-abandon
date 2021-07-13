@@ -10,8 +10,9 @@ return [
     | table_name 数据表名称
     | column_name 存放文件相对路径的字段名称
     | uq_key 该数据表的主键，默认为id
+    | exits_security 该数据表是否存在security字段，true 存在，false 不存在，默认为true
     |
-    | 'storage_file_table' => ['table_name' => 'qs_file_pic', 'column_name' => 'file', 'uq_key' => 'id']
+    | 'storage_file_table' => ['table_name' => 'qs_file_pic', 'column_name' => 'file', 'uq_key' => 'id', 'exits_security' => true]
     |
     */
 

@@ -82,4 +82,59 @@ class ConfigHelper{
         return self::checkConfig($not_empty_config_key);
     }
 
+    static public function existsSecurity(){
+        $config = self::getStorageFileTableWithColumn();
+        return isset($config['exits_security']) ? $config['exits_security'] : true;
+    }
+
+    static public function getSecurityColumnName(){
+        return 'security';
+    }
+
+    static public function combineStorageFileTable(&$table_arr){
+        $storage_file_table = self::getStorageFileTableWithColumn();
+        $table_name = $storage_file_table['table_name'];
+        $column_name = $storage_file_table['column_name'];
+
+        $table_arr[$table_name]['table_name'] = $table_name;
+        $table_arr[$table_name]['column_name'] = [$column_name];
+        $table_arr[$table_name]['uq_key'] = isset($storage_file_table['uq_key']) ? $storage_file_table['uq_key'] : 'id';
+        self::existsSecurity()  && $table_arr[$table_name]['column_name'][] = self::getSecurityColumnName();
+    }
+
+    static public function combineTableWithColumn(&$table_arr){
+        self::combineStorageFileTable($table_arr);
+
+        $keys = [
+            'table_field_mapping',
+            'table_editor_field_mapping'
+        ];
+
+        collect($keys)->each(function ($value) use(&$table_arr){
+            $config_value = ConfigHelper::getConfigWithKey($value);
+            collect($config_value)->each(function ($ent) use(&$table_arr){
+                $table_name = $ent['table_name'];
+                $column_name = $ent['column_name'];
+
+                if (isset($table_arr[$table_name])){
+                    $table_arr[$table_name]['column_name'] = array_merge($table_arr[$table_name]['column_name'] , (array)$column_name);
+                }else{
+                    $table_arr[$table_name]['table_name'] = $table_name;
+                    $table_arr[$table_name]['column_name'] = (array)$column_name;
+                }
+                $table_arr[$table_name]['uq_key'] = DBHelper::getUqKey($ent);
+            });
+        });
+
+//        $table_arr = collect($table_arr)->map(function ($table_column){
+//            $table_column['column_name'] = array_unique($table_column['column_name']);
+//            return $table_column;
+//        })->all();
+    }
+
+    static public function validDbConfig(){
+        self::combineTableWithColumn($table_arr);
+        return DBHelper::checkExistsTableWithColumn($table_arr);
+    }
+
 }

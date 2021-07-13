@@ -3,9 +3,9 @@
 namespace ClearAbandon\UsedFile\Type;
 
 use ClearAbandon\ConfigHelper;
+use ClearAbandon\DBHelper;
 use ClearAbandon\FileManager;
 use Illuminate\Support\Facades\DB;
-use function foo\func;
 
 class EditorType extends AType
 {
@@ -22,7 +22,7 @@ class EditorType extends AType
 
     protected function getTableWithColumnMapping()
     {
-        return parent::getTableWithColumnMapping() ?: $this->defaultEditorField();
+        return parent::getTableWithColumnMapping() ?: DBHelper::defaultEditorField($this->editor_data_type);
     }
 
     public function extractUsedFile()
@@ -70,25 +70,4 @@ class EditorType extends AType
         }
     }
 
-    protected function defaultEditorField(){
-        $table_schema = ConfigHelper::getDatabase();
-        $information_schema_sql = <<<sql
-SELECT tmp.*,c.COLUMN_NAME as uq_key from (
-SELECT TABLE_NAME as table_name,GROUP_CONCAT(COLUMN_NAME) as column_name FROM `information_schema`.`COLUMNS` where table_name ='qs_user_area' and TABLE_SCHEMA='{$table_schema}' and DATA_TYPE in ({$this->editor_data_type}) GROUP BY TABLE_NAME) tmp
-left join (SELECT TABLE_NAME,COLUMN_NAME,COLUMN_KEY from `information_schema`.`COLUMNS` where COLUMN_KEY = 'PRI' GROUP by TABLE_NAME,COLUMN_NAME,COLUMN_KEY) c ON c.TABLE_NAME = tmp.TABLE_NAME;
-sql;
-        $table_with_column = DB::select($information_schema_sql);
-        collect($table_with_column)->each(function ($ent) use(&$data){
-            $table_name = $ent->table_name;
-            $uq_key = $ent->uq_key;
-            $column_name = explode(',', $ent->column_name);
-            $data[] = [
-                'table_name' => $table_name,
-                'column_name' => $column_name,
-                'uq_key' => $uq_key,
-            ];
-        });
-
-        return $data;
-    }
 }

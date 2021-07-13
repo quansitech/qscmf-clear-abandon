@@ -4,8 +4,6 @@ namespace ClearAbandon;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use phpDocumentor\Reflection\Types\Collection;
-use function foo\func;
 
 class DBHelper
 {
@@ -136,4 +134,94 @@ sql;
         }
     }
 
+    static public function defaultEditorField($editor_data_type){
+        $table_schema = ConfigHelper::getDatabase();
+        $information_schema_sql = <<<sql
+SELECT tmp.*,c.COLUMN_NAME as uq_key from (
+SELECT TABLE_NAME as table_name,GROUP_CONCAT(COLUMN_NAME) as column_name FROM `information_schema`.`COLUMNS` where TABLE_SCHEMA='{$table_schema}' and DATA_TYPE in ({$editor_data_type}) GROUP BY TABLE_NAME) tmp
+left join (SELECT TABLE_NAME,COLUMN_NAME,COLUMN_KEY from `information_schema`.`COLUMNS` where COLUMN_KEY = 'PRI' GROUP by TABLE_NAME,COLUMN_NAME,COLUMN_KEY) c ON c.TABLE_NAME = tmp.TABLE_NAME;
+sql;
+        $table_with_column = DB::select($information_schema_sql);
+        collect($table_with_column)->each(function ($ent) use(&$data){
+            $table_name = $ent->table_name;
+            $uq_key = $ent->uq_key;
+            $column_name = explode(',', $ent->column_name);
+            $data[] = [
+                'table_name' => $table_name,
+                'column_name' => $column_name,
+                'uq_key' => $uq_key,
+            ];
+        });
+
+        return $data;
+    }
+
+    static public function checkExistsTableWithColumn($data){
+        $table_schema = ConfigHelper::getDatabase();
+        self::parseTableNameStr($data, $all_table_name_str);
+
+        $sql = <<<sql
+SELECT tmp.*,c.COLUMN_NAME as uq_key from (
+SELECT TABLE_NAME as table_name,GROUP_CONCAT(COLUMN_NAME) as column_name FROM `information_schema`.`COLUMNS` where TABLE_NAME in ({$all_table_name_str}) and TABLE_SCHEMA='{$table_schema}' GROUP BY TABLE_NAME) tmp
+left join (SELECT TABLE_NAME,COLUMN_NAME,COLUMN_KEY from `information_schema`.`COLUMNS` where COLUMN_KEY = 'PRI' GROUP by TABLE_NAME,COLUMN_NAME,COLUMN_KEY) c ON c.TABLE_NAME = tmp.TABLE_NAME;
+sql;
+
+        $table_with_column = DB::select($sql);
+        return self::checkTableWithColumn($data, $table_with_column);
+    }
+
+    static protected function parseTableNameStr($data, &$all_table_name_str){
+        $all_table_name = array_column($data, 'table_name');
+        $all_table_name_str = "'".implode("','", $all_table_name)."'";
+    }
+
+    static protected function checkTableWithColumn($data, $db_data_arr_cls){
+        $error_tip = [];
+        $db_table_name = [];
+
+        collect($db_data_arr_cls)->each(function ($ent) use($data, &$error_tip, &$db_table_name){
+            $table_name = $ent->table_name;
+            $db_table_name[] = $table_name;
+            $uq_key = $ent->uq_key;
+            $column_name = explode(',', $ent->column_name);
+
+            $diff_column = self::hasDiffColumn($column_name, $data[$table_name]['column_name']);
+            if (!empty($diff_column)){
+                $error_tip[$table_name] = $table_name.' 数据表配置不正确，不存在字段'. implode(",", $diff_column);
+            }
+            $is_same = self::isSameUqKey($uq_key, $data[$table_name]['uq_key']);
+            if (!$is_same){
+                $error_tip[$table_name] = isset($error_tip[$table_name]) ?
+                    $error_tip[$table_name].'，uq_key不正确':
+                    $table_name.' 数据表配置不正确，uq_key不正确';
+            }
+        });
+
+        $diff_table = self::hasDiffTable($db_table_name, array_keys($data));
+        if (!empty($diff_table)){
+            $error_tip[] = implode(",", $diff_table). " 数据表不存在";
+        }
+
+        if (!empty($error_tip)){
+            throw new \Exception(implode(PHP_EOL, $error_tip).PHP_EOL.'请检查并修改配置');
+        }else{
+            return true;
+        }
+    }
+
+    static protected function hasDiffTable($db_table, $cus_table){
+        return array_diff($cus_table, $db_table);
+    }
+
+    static protected function hasDiffColumn($db_column, $cus_column){
+        return array_diff($cus_column, $db_column);
+    }
+
+    static protected function isSameUqKey($db_column, $cus_column){
+        return $db_column === $cus_column;
+    }
+
+    static public function getUqKey($config, $key = 'uq_key'){
+        return isset($config[$key]) && $config[$key] ? $config[$key] : 'id';
+    }
 }

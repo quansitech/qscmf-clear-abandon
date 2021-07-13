@@ -46,6 +46,8 @@ class ClearAbandonCommand extends Command
      */
     public function handle()
     {
+        ConfigHelper::validDbConfig();
+
         $is_delete = $this->option('delete');
         if ($is_delete){
             if ($this->confirm("确定要直接删除吗？")){
