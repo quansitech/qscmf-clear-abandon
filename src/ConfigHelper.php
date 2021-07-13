@@ -48,6 +48,10 @@ class ConfigHelper{
         return self::getStorageFileTableWithColumn()['table_name'];
     }
 
+    static public function getStorageFileColumn(){
+        return self::getStorageFileTableWithColumn()['column_name'];
+    }
+
     static public function getStorageFileUqKey(){
         return DBHelper::getUqKey(self::getStorageFileTableWithColumn());
     }
@@ -96,13 +100,13 @@ class ConfigHelper{
     }
 
     static public function combineStorageFileTable(&$table_arr){
-        $storage_file_table = self::getStorageFileTableWithColumn();
-        $table_name = $storage_file_table['table_name'];
-        $column_name = $storage_file_table['column_name'];
+        $table_name = ConfigHelper::getStorageFileTable();
+        $column_name = ConfigHelper::getStorageFileColumn();
+        $uq_key = ConfigHelper::getStorageFileUqKey();
 
         $table_arr[$table_name]['table_name'] = $table_name;
-        $table_arr[$table_name]['column_name'] = [$column_name];
-        $table_arr[$table_name]['uq_key'] = isset($storage_file_table['uq_key']) ? $storage_file_table['uq_key'] : 'id';
+        $table_arr[$table_name]['column_name'] = is_array($column_name)?$column_name:[$column_name];
+        $table_arr[$table_name]['uq_key'] = $uq_key;
         self::existsSecurity()  && $table_arr[$table_name]['column_name'][] = self::getSecurityColumnName();
     }
 

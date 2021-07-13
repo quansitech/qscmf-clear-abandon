@@ -9,10 +9,9 @@ class DBHelper
 {
 
     static public function fetchIdsWithFile($file){
-        $table_with_column = ConfigHelper::getStorageFileTableWithColumn();
-        $table = $table_with_column['table_name'];
-        $field_name = $table_with_column['column_name'];
-        $uq_key = $table_with_column['uq_key'];
+        $table = ConfigHelper::getStorageFileTable();
+        $field_name = ConfigHelper::getStorageFileColumn();
+        $uq_key = ConfigHelper::getStorageFileUqKey();
         $file = array_values($file);
 
         $db = DB::table($table)

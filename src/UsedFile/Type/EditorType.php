@@ -61,7 +61,7 @@ class EditorType extends AType
     protected function extractFileFromEditorStr($string){
         $decode_string = htmlspecialchars_decode($string);
         $path = trim($this->storage_file_dir, '/');
-        $file_rule = '/<(?:img|a).*?(?:src|href)=[\"|\']((?:[\w|\:|\/|\d|\.]+)?\/'.$path.'\/(.*?))[\"|\']/i';
+        $file_rule = '/.*?[\"|\']((?:[\w|\:|\/|\d|\.|\-]+)?\/'.$path.'\/(.*?))[\"|\']/i';
         $r = preg_match_all($file_rule, $decode_string, $matches);
         if ($r > 0){
             array_map(function ($used, $key) use(&$file_matches){
