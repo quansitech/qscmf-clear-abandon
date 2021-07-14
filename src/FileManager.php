@@ -44,7 +44,7 @@ class FileManager
 
     static public function getUnusedFile(){
         return collect(self::$_files_class)->filter(function (File $file){
-            return !$file->getUsed();
+            return $file->getPathName() && !$file->getUsed();
         })->all();
     }
 
@@ -59,11 +59,14 @@ class FileManager
         $file_system = new Filesystem();
 
         collect($need_move_file)->each(function (File $file) use($file_system, $target_dir_name){
-            $target_path = $target_dir_name.$file->getRelativePath();
-            $target_path_name = $target_dir_name.$file->getRelativePathName();
-            self::createStorageTmpDir($target_path);
-            $move_r = $file_system->move($file->getPathName(), $target_path_name);
-            return $move_r;
+            $file_path_name = $file->getPathName();
+            if ($file_path_name){
+                $target_path = $target_dir_name.$file->getRelativePath();
+                $target_path_name = $target_dir_name.$file->getRelativePathName();
+                self::createStorageTmpDir($target_path);
+                $move_r = $file_system->move($file->getPathName(), $target_path_name);
+                return $move_r;
+            }
         });
     }
 
