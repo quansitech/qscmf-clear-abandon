@@ -4,6 +4,8 @@ namespace ClearAbandon;
 
 class ConfigHelper{
 
+    const PER_PAGE_NMU = 1000;
+
     static public function getConfigPrefix($prefix = null){
         return $prefix ?: 'clearAbandon';
     }
@@ -113,25 +115,20 @@ class ConfigHelper{
     static public function combineTableWithColumn(&$table_arr){
         self::combineStorageFileTable($table_arr);
 
-        $keys = [
-            'table_field_mapping',
-            'table_editor_field_mapping'
-        ];
+        $key = 'table_field_mapping';
 
-        collect($keys)->each(function ($value) use(&$table_arr){
-            $config_value = ConfigHelper::getConfigWithKey($value);
-            collect($config_value)->each(function ($ent) use(&$table_arr){
-                $table_name = $ent['table_name'];
-                $column_name = $ent['column_name'];
+        $config_value = ConfigHelper::getConfigWithKey($key);
+        collect($config_value)->each(function ($ent) use(&$table_arr){
+            $table_name = $ent['table_name'];
+            $column_name = array_column($ent['column_name'], 'name');
 
-                if (isset($table_arr[$table_name])){
-                    $table_arr[$table_name]['column_name'] = array_merge($table_arr[$table_name]['column_name'] , (array)$column_name);
-                }else{
-                    $table_arr[$table_name]['table_name'] = $table_name;
-                    $table_arr[$table_name]['column_name'] = (array)$column_name;
-                }
-                $table_arr[$table_name]['uq_key'] = DBHelper::getUqKey($ent);
-            });
+            if (isset($table_arr[$table_name])){
+                $table_arr[$table_name]['column_name'] = array_merge($table_arr[$table_name]['column_name'] , (array)$column_name);
+            }else{
+                $table_arr[$table_name]['table_name'] = $table_name;
+                $table_arr[$table_name]['column_name'] = (array)$column_name;
+            }
+            $table_arr[$table_name]['uq_key'] = DBHelper::getUqKey($ent);
         });
 
 //        $table_arr = collect($table_arr)->map(function ($table_column){

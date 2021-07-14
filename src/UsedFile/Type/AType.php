@@ -3,29 +3,26 @@
 
 namespace ClearAbandon\UsedFile\Type;
 
-
-use ClearAbandon\ConfigHelper;
-use ClearAbandon\DBHelper;
-
 abstract class AType implements IType
 {
-    protected $table_with_column_mapping_key;
-    protected $table_with_column_mapping;
-    protected $per_page = 1000;
-
     public function __construct()
     {
-        $this->table_with_column_mapping = $this->getTableWithColumnMapping();
     }
 
-    protected function getTableWithColumnMapping(){
-        return ConfigHelper::getConfigWithKey($this->table_with_column_mapping_key);
+    protected function parseValue(&$values){
+        $files = [];
+        collect($values)->each(function ($value) use(&$files){
+            if ($value){
+                strpos($value, ',') !== false && $value = explode(',', trim($value, ','));
+                $value = is_array($value) ? $value : (array)$value;
+                $files = array_merge($files, $value);
+            }
+
+        });
+
+        return array_unique($files);
     }
 
-    protected function getUqKey($config, $key = 'uq_key'){
-        return DBHelper::getUqKey($config, $key);
-    }
-
-    abstract public function extractUsedFile();
+    abstract public function extractUsedFile(&$values = '');
 
 }

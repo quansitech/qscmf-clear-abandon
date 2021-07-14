@@ -52,14 +52,65 @@ return [
     | 所有使用了文件信息的数据表及其字段信息
     |--------------------------------------------------------------------------
     |
-    | table_name 数据表名称
-    | column_name 字段名称，多个使用,隔开
-    | uq_key 该数据表的主键，默认为id
+    | table_name string 数据表名称
     |
-    | 'table_field_mapping' => [
-    |     ['table_name' => 'qs_user_area','column_name' => ['file_id','img_ids'], 'uq_key' => 'id'],
-    |     ['table_name' => 'qs_file_test','column_name' => ['file_id','img_ids']]
-    | ]
+    | column_name array 字段相关信息
+    |   name 字段名称
+    |   type 数据存储类型，目前的基本类型有 id、url、editor
+    |        id 指使用了文件信息主键的数据，包括单个、多个（使用,隔开），如 1、5,6
+    |        url 指使用了文件路径（包括相对路径、可远程访问的url）的数据
+    |            ！！！需要有/Uploads/
+    |            如 /sub_root/Uploads/image/20210716/1626160809666786.jpg， /Uploads/image/20210716/1626160809666786.jpg，http://quansitech.com/Uploads/image/20210716/1626160809666786.jpg
+    |        editor 指存储了富文本的数据
+    |               ！！！目前只支持显性使用了文件路径的情况
+    |
+    |        如果同一个字段的数据使用了多种类型来存储，则可以使用回调函数返回具体的类型，回调函数接收的参数为 该行所有字段数据的对象 。此时的配置： type 为 callback ， type_callback 为回调函数。
+    |        例如系统配置数据表qs_config，该数据表有配置类型字段如type，有配置值字段如value。
+    |        当type为 picture、file 等值时，value值存储的是 id类型；当type为 ueditor 时，value值存储的是 editor类型；非以上情况返回 false。
+    |
+    | uq_key string 该数据表的主键，默认为id
+    |
+    |
+    |    'table_field_mapping' => [
+    |        [
+    |            'table_name' => 'qs_user_area',
+    |            'column_name' => [
+    |                ['name' => 'file_id', 'type' => 'id'],
+    |                ['name' => 'file', 'type' => 'url'],
+    |                ['name' => 'context', 'type' => 'editor'],
+    |            ],
+    |            'uq_key' => 'id'
+    |        ],
+    |        [
+    |            'table_name' => 'qs_config',
+    |            'column_name' => [
+    |                ['name' => 'value', 'type' => 'callback', 'type_callback' => function($db_data){
+    |                    $type_value = $db_data->type;
+    |                    if (in_array($type_value, ['picture','file','pictures','files'])){
+    |                        return 'id';
+    |                    }elseif($type_value == 'ueditor'){
+    |                        return 'editor';
+    |                    }
+    |                    return false;
+    |                }],
+    |            ],
+    |        ],
+    |        [
+    |            'table_name' => 'qs_person',
+    |            'column_name' => [
+    |                ['name' => 'avatar', 'type' => 'callback', 'type_callback' => function($db_data){
+    |                    $avatar = $db_data->avatar;
+    |                    if (is_numeric($avatar)){
+    |                        return 'id';
+    |                    }elseif($avatar != ''){
+    |                        return 'url';
+    |                    }
+    |                    return false;
+    |                }],
+    |                ['name' => 'id_pic', 'type' => 'id'],
+    |            ],
+    |        ]
+    |    ],
     |
     */
 
@@ -67,26 +118,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 数据表及其富文本字段信息，若不配置则默认为所有数据表的text、longtext数据类型的字段
-    |--------------------------------------------------------------------------
-    |
-    | table_name 数据表名称
-    | column_name 字段名称，多个使用,隔开
-    | uq_key 该数据表的主键，默认为id
-    |
-    | 'table_editor_field_mapping' => [
-    |     ['table_name' => 'qs_user_area','column_name' => ['context','short_content'], 'uq_key' => 'id'],
-    |     ['table_name' => 'qs_file_test','column_name' => ['summary']]
-    | ]
-    |
-    */
-
-    'table_editor_field_mapping' => [],
-
-    /*
-    |--------------------------------------------------------------------------
     | 文件访问域名
     |--------------------------------------------------------------------------
+    |
+    | 如访问某个文件的url为 http://quansitech.com/Uploads/image/20210716/1626160809666786.jpg
+    | 或者为 http://www.quansitech.com/Uploads/image/20210716/1626160809666786.jpg
+    |
+    | 'file_domain' => ['www.quansitech.com','quansitech.com']
     |
     */
 
