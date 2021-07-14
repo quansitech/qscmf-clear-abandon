@@ -60,12 +60,11 @@ class FileManager
 
         collect($need_move_file)->each(function (File $file) use($file_system, $target_dir_name){
             $file_path_name = $file->getPathName();
-            if ($file_path_name){
+            if ($file_system->exists($file_path_name)){
                 $target_path = $target_dir_name.$file->getRelativePath();
                 $target_path_name = $target_dir_name.$file->getRelativePathName();
                 self::createStorageTmpDir($target_path);
-                $move_r = $file_system->move($file->getPathName(), $target_path_name);
-                return $move_r;
+                $file_system->move($file_path_name, $target_path_name);
             }
         });
     }
@@ -99,8 +98,10 @@ class FileManager
         $file_system = new Filesystem();
 
         collect($need_delete_file)->each(function (File $file) use($file_system){
-            $delete_r = $file_system->delete($file->getPathName());
-            return $delete_r;
+            $file_path_name = $file->getPathName();
+            if ($file_system->exists($file_path_name)){
+                $file_system->delete($file_path_name);
+            }
         });
     }
 }
