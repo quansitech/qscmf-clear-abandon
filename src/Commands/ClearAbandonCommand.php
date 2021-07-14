@@ -46,6 +46,7 @@ class ClearAbandonCommand extends Command
      */
     public function handle()
     {
+        $this->canMkDir();
         ConfigHelper::validDbConfig();
 
         $is_delete = $this->option('delete');
@@ -56,6 +57,12 @@ class ClearAbandonCommand extends Command
         }else{
             $this->softDel();
         }
+    }
+
+    protected function canMkDir(){
+        $path = LARA_DIR.'/test_mkdir';
+        mkdir($path);
+        rmdir($path);
     }
 
     // 直接删除
