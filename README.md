@@ -22,6 +22,10 @@ php artisan vendor:publish --provider="ClearAbandon\ClearAbandonServiceProvider"
   
 + 根据项目修改配置值，具体配置项查看配置文件 clearAbandon.php 注释
 
+**检查数据库登录用户是否有写数据的权限** 
+
+**检查用户是否拥有配置的文件夹及其文件操作权限**
+
 若需要覆盖已存在的配置文件，则执行命令
 ```bash
 php artisan vendor:publish --provider="ClearAbandon\ClearAbandonServiceProvider" --force

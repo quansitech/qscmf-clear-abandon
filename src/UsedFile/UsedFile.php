@@ -28,8 +28,8 @@ class UsedFile{
             $db ->orderBy(DBHelper::getUqKey($ent))
                 ->chunk(ConfigHelper::PER_PAGE_NMU, function ($list) use($column_name){
                     $type_data = [];
-                    foreach ($list as $row_data) {
-                        self::parseRow($column_name, $row_data, $type_data);
+                    foreach ($list as $col_data) {
+                        self::parsePerColData($column_name, $col_data, $type_data);
                     }
                     collect($type_data)->each(function ($value_arr, $type){
                         $value_arr = array_filter($value_arr);
@@ -57,7 +57,7 @@ class UsedFile{
         }
     }
 
-    static protected function parseRow($cus_column_config, $db_data, &$type_batch_data){
+    static protected function parsePerColData($cus_column_config, $db_data, &$type_batch_data){
         collect($cus_column_config)->each(function ($ent) use($db_data, &$type_batch_data){
             $name = $ent['name'];
             $value = (string)$db_data->$name;
