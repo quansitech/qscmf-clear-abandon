@@ -60,7 +60,7 @@ class ClearAbandonCommand extends Command
     }
 
     protected function canMkDir(){
-        $path = LARA_DIR.'/test_mkdir';
+        $path = ConfigHelper::getStorageTmpDirName();
         mkdir($path);
         rmdir($path);
     }
