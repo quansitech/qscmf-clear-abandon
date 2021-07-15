@@ -60,8 +60,10 @@ class ClearAbandonCommand extends Command
     }
 
     protected function canMkDir(){
-        $path = ConfigHelper::getStorageTmpDirName();
-        mkdir($path);
+        $path = ConfigHelper::getStorageTmpDirName().'CA_test_mkdir';
+        if (!file_exists($path)){
+            mkdir($path);
+        }
         rmdir($path);
     }
 
