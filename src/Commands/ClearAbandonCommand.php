@@ -101,7 +101,7 @@ class ClearAbandonCommand extends Command
         $this->info('deleting '.count($unused_files).' files');
         FileManager::deleteFile($unused_files);
 
-        $this->deleteEmptyDirectory(ConfigHelper::getStorageFileDirName(), true);
+        deleteEmptyDirectory(ConfigHelper::getStorageFileDirName(), true);
 
         $this->info('delete success');
     }
@@ -171,7 +171,7 @@ class ClearAbandonCommand extends Command
         $this->info('moving '.count($unused_files).' files');
         FileManager::moveFile($unused_files);
 
-        $this->deleteEmptyDirectory(ConfigHelper::getStorageFileDirName(), true);
+        deleteEmptyDirectory(ConfigHelper::getStorageFileDirName(), true);
 
         $this->info('soft delete success');
     }
@@ -213,27 +213,6 @@ class ClearAbandonCommand extends Command
         if (!$without_empty_config){
             throw new \Exception('invalid config:'. $key_name);
         }
-    }
-
-    public function deleteEmptyDirectory($directory, $preserve = false)
-    {
-        if (!is_dir($directory)) {
-            return false;
-        }
-
-        $items = new \FilesystemIterator($directory);
-
-        foreach ($items as $item) {
-            if ($item->isDir() && !$item->isLink()) {
-                $this->deleteEmptyDirectory($item->getPathname());
-            }
-        }
-
-        if (!$preserve && count(scandir($directory)) === 2) {
-            rmdir($directory);
-        }
-
-        return true;
     }
 
 }
